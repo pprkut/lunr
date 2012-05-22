@@ -337,7 +337,7 @@ class Pagination
     {
         // If base_url is empty it is because the initialize method has
         // not been called
-        if($this->total == -1)
+        if(!isset($this->total) || $this->total == -1)
         {
             return FALSE;
         }
