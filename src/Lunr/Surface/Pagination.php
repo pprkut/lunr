@@ -74,6 +74,8 @@ class Pagination
 
     /**
      * Constructor.
+     *
+     * @param Request &$request reference to the request class
      */
     public function __construct(&$request)
     {
