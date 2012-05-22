@@ -75,13 +75,31 @@ class Pagination
     /**
      * Constructor.
      */
-    public function __construct()
+    public function __construct(&$request)
     {
         // Default values
         $this->per_page = 25;
         $this->range    = 2;
 
-        $this->buttons                     = array();
+        $base_url = $request->base_url;
+        if (isset($base_url) && !empty($base_url))
+        {
+            $this->base_url = $base_url . '/';
+        }
+
+        $params = $request->params;
+        $cursor = end($params);
+        if (is_int($cursor))
+        {
+            $this->cursor = $cursor;
+        }
+        else
+        {
+            $this->cursor = 1;
+        }
+
+        $this->buttons = array();
+
         $this->buttons['first']            = array();
         $this->buttons['first']['text']    = '&#8810;';
         $this->buttons['first']['enabled'] = TRUE;
@@ -97,7 +115,6 @@ class Pagination
         $this->buttons['last']            = array();
         $this->buttons['last']['text']    = '&#8811;';
         $this->buttons['last']['enabled'] = TRUE;
-
     }
 
     /**
@@ -117,98 +134,74 @@ class Pagination
     }
 
     /**
-     * Initializes the Pagination.
+     * Define the total number of items to be paginated.
      *
-     * calculates number of pages and builds the Pagination
+     * @param Integer $nritems the actual number of items
      *
-     * @param array $config The configuration parameters for the Pagination
-     *                      The array keys and values data types are the
-     *                      following:
-     *                      <ul>
-     *                        <li>'current_page', Integer (Mandatory)</li>
-     *                        <li>'base_url', String (Mandatory)</li>
-     *                        <li>'total', Integer (Mandatory, total number
-     *                              of items queried)</li>
-     *                        <li>'per_page', Integer (Optional, items shown
-     *                              per page, set to 25 by default)</li>
-     *                        <li>'range', Integer (Optional, cursors lesser
-     *                              and bigger shown before and after the
-     *                              current cursor, set to 2 by default)</li>
-     *                        <li>'text_previous', String (Optional, text
-     *                              shown in previous button, set to "&lt;" by
-     *                              default)</li>
-     *                        <li>'text_separator', String (Optional, text
-     *                              shown in separators, set to "..." by
-     *                              default)</li>
-     *                        <li>'text_next', String (Optional, text shown in
-     *                              next button, set to "&gt;" by default)</li>
-     *                      </ul>
-     *
-     * @return void
+     * @return Pagination $self self reference
      */
-    public function initialize($config)
+    public function set_total_items($nritems)
     {
-        // empty(0) is true and we want to avoid it, so we check if cursor is 0
-        if ($config['current_page'] == 0
-            || (isset($config['current_page'])
-                && !empty($config['current_page'])))
+        if (is_int($nritems) && $nritems > 0)
         {
-            $this->cursor = $config['current_page'];
+            $this->total = $nritems;
         }
         else
         {
-            return FALSE;
+            $this->total = -1;
         }
 
-        if (isset($config['base_url']) && !empty($config['base_url']))
-        {
-            $this->base_url = $config['base_url'];
-        }
-        else
-        {
-            return FALSE;
-        }
+        return $this;
+    }
 
-        if (isset($config['total']) && !empty($config['total']))
+    /**
+     * Assign labels to the first, last, next & previous buttons.
+     *
+     * @param String $key 	can be one of the following:
+     * 						'first', 'last', 'next', 'previous'
+     * @param String $label	the text to be put at the corresponding button
+     *
+     * @return Pagination $self self reference
+     */
+    public function button_label($key, $label='')
+    {
+        if (array_key_exists($key, $this->buttons))
         {
-            $this->total = $config['total'];
+            $this->buttons[$key]['text'] = $label;
         }
-        else
-        {
-            return FALSE;
-        }
+        return $this;
+    }
 
-        if (isset($config['per_page']) && !empty($config['per_page']))
+    /**
+     * Define the range of pages to navigate around the current one.
+     *
+     * @param Integer $range the actual range
+     *
+     * @return Pagination $self self reference
+     */
+    public function range($range)
+    {
+        if (is_int($range) && $range > 0)
         {
-            $this->per_page = $config['per_page'];
+            $this->range = $range;
         }
+        return $this;
+    }
 
-        if (isset($config['range']) && !empty($config['range']))
+    /**
+     * Define the number of items per page.
+     *
+     * @param Integer $per_page the actual number of items per page
+     *
+     * @return Pagination $self self reference
+     */
+    public function per_page($per_page)
+    {
+        if (is_int($per_page) && $per_page > 0)
         {
-            $this->range = $config['range'];
+            $this->per_page = $per_page;
         }
-
-        if (isset($config['text_previous']) && !empty($config['text_previous']))
-        {
-            $this->buttons['previous']['text'] = $config['text_previous'];
-        }
-
-        if (isset($config['text_first']) && !empty($config['text_first']))
-        {
-            $this->buttons['first']['text'] = $config['text_first'];
-        }
-
-        if (isset($config['text_last']) && !empty($config['text_last']))
-        {
-            $this->buttons['last']['text'] = $config['text_last'];
-        }
-
-        if (isset($config['text_next']) && !empty($config['text_next']))
-        {
-            $this->buttons['next']['text'] = $config['text_next'];
-        }
-
-        $this->pages_total = ceil($this->total / $this->per_page);
+        return $this;
     }
 
     /**
@@ -344,10 +337,12 @@ class Pagination
     {
         // If base_url is empty it is because the initialize method has
         // not been called
-        if(empty($this->base_url))
+        if($this->total == -1)
         {
             return FALSE;
         }
+        //calculate the total number of pages
+        $this->pages_total = ceil($this->total / $this->per_page);
 
         // current cursor above the limit (pages_total) is not allowed
         if ($this->cursor > $this->pages_total)
