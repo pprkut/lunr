@@ -229,7 +229,7 @@ class Pagination
             $end = $this->cursor - 1;
             for($i = $start; $i <= $end; ++$i)
             {
-                $html .= '<a class="paginator_page" href="';
+                $html .= '<a class="lunr_paginator_page" href="';
                 $html .= $this->base_url . $i . '">' . $i . "</a>\n";
             }
 
@@ -259,7 +259,7 @@ class Pagination
             $end   = $this->cursor + $amount;
             for($i = $start; (($i <= $end) && ($i <= $this->pages_total)); ++$i)
             {
-                $html .= '<a class="paginator_page" href="';
+                $html .= '<a class="lunr_paginator_page" href="';
                 $html .= $this->base_url . $i . '">' . $i . "</a>\n";
             }
 
@@ -303,14 +303,14 @@ class Pagination
         {
             // these divs wrap the test (or image) for the buttons:
             // first, last, previous and second
-            $html  = "<div class='paginator_$type'><a href='";
+            $html  = "<div class='lunr_paginator_$type'><a href='";
             $html .= $this->base_url . $target . "'>";
             $html .= $this->buttons[$type]['text'] . "</a></div>\n";
         }
         else
         {
             // the same as above but to allow the divs being showed as disabled
-            $html  = "<div class='paginator_$type paginator_${type}_disabled'>";
+            $html  = "<div class='lunr_paginator_$type lunr_paginator_${type}_disabled'>";
             $html .= $this->buttons[$type]['text'] . "</div>\n";
         }
 
@@ -397,13 +397,13 @@ class Pagination
         $html .= $this->build_button('previous');
         // paginator_numbers class div wraps the cursors shown as numbers.
         // This wrapping div allow us to show the numbers centered in screen
-        $html .= "<div class='paginator_numbers'>\n";
+        $html .= "<div class='lunr_paginator_numbers'>\n";
         $html .= $this->build_previous($nprevious);
         // using the span we set the style for the current cursor
-        $html .= '<span class="paginator_page paginator_page_sel">';
+        $html .= '<span class="lunr_paginator_page lunr_paginator_page_sel">';
         $html .= $this->cursor . "</span>\n";
         $html .= $this->build_next($nnext);
-        $html .= "</div>\n"; // closes <div class='paginator_numbers'>
+        $html .= "</div>\n"; // closes <div class='lunr_paginator_numbers'>
         $html .= $this->build_button('next');
         $html .= $this->build_button('last');
 
