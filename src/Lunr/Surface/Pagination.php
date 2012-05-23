@@ -160,7 +160,7 @@ class Pagination
      * Assign labels to the first, last, next & previous buttons.
      *
      * @param String $key   can be one of the following:
-     * 						'first', 'last', 'next', 'previous'
+     *                      'first', 'last', 'next', 'previous'
      * @param String $label the text to be put at the corresponding button
      *
      * @return Pagination $self self reference
