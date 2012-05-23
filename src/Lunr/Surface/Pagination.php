@@ -153,7 +153,7 @@ class Pagination
         return $this;
     }
 
-    /**
+   /**
     * Define the base url of the pagination links.
     *
     * @param String $url the actual base url
