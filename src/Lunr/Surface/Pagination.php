@@ -164,7 +164,7 @@ class Pagination
     {
         if (isset($url) && is_string($url))
         {
-            $this->base_url($url);
+            $this->base_url = $url;
         }
         return $this;
     }
