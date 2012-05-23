@@ -162,7 +162,7 @@ class Pagination
      *
      * @return Pagination $self self reference
      */
-    public function button_label($key, $label='')
+    public function set_button_label($key, $label='')
     {
         if (array_key_exists($key, $this->buttons))
         {
@@ -172,13 +172,13 @@ class Pagination
     }
 
     /**
-     * Define the range of pages to navigate around the current one.
+     * Define the number of pages displayed before and after the current one.
      *
      * @param Integer $range the actual range
      *
      * @return Pagination $self self reference
      */
-    public function range($range)
+    public function set_range($range)
     {
         if (is_int($range) && $range > 0)
         {
@@ -194,7 +194,7 @@ class Pagination
      *
      * @return Pagination $self self reference
      */
-    public function per_page($per_page)
+    public function set_items_per_page($per_page)
     {
         if (is_int($per_page) && $per_page > 0)
         {
@@ -336,7 +336,7 @@ class Pagination
     {
         // If the total number of items is not set, then the set_total_items has
         // not been called and the pagination cannot be built
-        if(!isset($this->total) || $this->total == -1)
+        if($this->total == -1)
         {
             return FALSE;
         }
