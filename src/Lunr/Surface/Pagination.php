@@ -80,8 +80,10 @@ class Pagination
     public function __construct(&$request)
     {
         // Default values
-        $this->per_page = 25;
-        $this->range    = 2;
+        $this->per_page     = 25;
+        $this->range        =  2;
+        $this->total        = -1;
+        $this->pages_total  =  0;
 
         $base_url = $request->base_url;
         if (isset($base_url) && !empty($base_url))
@@ -148,11 +150,6 @@ class Pagination
         {
             $this->total = $nritems;
         }
-        else
-        {
-            $this->total = -1;
-        }
-
         return $this;
     }
 
