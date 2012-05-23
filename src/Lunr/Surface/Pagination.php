@@ -337,8 +337,8 @@ class Pagination
      */
     public function create_links()
     {
-        // If base_url is empty it is because the initialize method has
-        // not been called
+        // If th total number of items is not set, then the set_total_items has
+        // not been called and the pagination cannot be built
         if(!isset($this->total) || $this->total == -1)
         {
             return FALSE;
