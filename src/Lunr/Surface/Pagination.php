@@ -154,6 +154,22 @@ class Pagination
     }
 
     /**
+    * Define the base url of the pagination links.
+    *
+    * @param String $url the actual base url
+    *
+    * @return Pagination $self self reference
+    */
+    public function set_base_url($url)
+    {
+        if (isset($url) && is_string($url))
+        {
+            $this->base_url($url);
+        }
+        return $this;
+    }
+
+    /**
      * Assign labels to the first, last, next & previous buttons.
      *
      * @param String $key   can be one of the following:
