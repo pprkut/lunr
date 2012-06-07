@@ -153,13 +153,13 @@ class Pagination
         return $this;
     }
 
-   /**
-    * Define the base url of the pagination links.
-    *
-    * @param String $url the actual base url
-    *
-    * @return Pagination $self self reference
-    */
+    /**
+     * Define the base url of the pagination links.
+     *
+     * @param String $url the actual base url
+     *
+     * @return Pagination $self self reference
+     */
     public function set_base_url($url)
     {
         if (isset($url) && is_string($url))
