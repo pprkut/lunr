@@ -94,12 +94,6 @@ class Pagination
         $this->total        = -1;
         $this->pages_total  =  0;
 
-        $base_url = $request->base_url;
-        if (isset($base_url) && !empty($base_url))
-        {
-            $this->base_url = $base_url . '/';
-        }
-
         $params = $request->params;
         $cursor = end($params);
         if (is_int($cursor))
@@ -110,6 +104,8 @@ class Pagination
         {
             $this->cursor = 1;
         }
+
+        $this->base_url .= $request->base_url . '/' . $request->controller . '/' . $request->method . '/'; // TODO: imploded params
 
         $this->buttons = array();
 
