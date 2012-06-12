@@ -95,21 +95,28 @@ class Pagination
         $this->pages_total  =  0;
 
         $params = $request->params;
-        $cursor = array_pop($params);
-
-        if (is_int($cursor) && $cursor <= self::MAX_PAGES)
+        if (!empty($params))
         {
-            $this->cursor = cursor;
+            $cursor = array_pop($params);
+            //Extract the page cursor from the parameters array
+            if (is_int($cursor) && $cursor <= self::MAX_PAGES)
+            {
+                $this->cursor = cursor;
+            }
+            else
+            {
+                $this->cursor = 1;
+                array_push($params, $cursor);
+            }
+            $params_str = implode('/', $params);
         }
         else
         {
             $this->cursor = 1;
-            array_push($params, $cursor);
+            $params_str = '';
         }
 
-        $params_str = implode('/', $params);
-
-        $this->base_url .= $request->base_url . '/' . $request->controller . '/' . $request->method . '/' . $params_str . '/' . $this->cursor;
+        $this->base_url = $request->base_url . '/' . $request->controller . '/' . $request->method . '/' . $params_str;
 
         $this->buttons = array();
 
