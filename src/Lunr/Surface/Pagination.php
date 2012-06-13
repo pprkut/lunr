@@ -31,15 +31,6 @@ class Pagination
 {
 
     /**
-     * The maximum number of pages that the pagination class
-     * can support. We compare the current cursor against this
-     * constant.
-     *
-     * @var Integer
-     */
-    const MAX_PAGES = 250;
-
-    /**
      * Cursor pointing to the currently displayed page
      * @var Integer
      */
@@ -99,7 +90,7 @@ class Pagination
         {
             $cursor = array_pop($params);
             //Extract the page cursor from the parameters array
-            if (is_int($cursor) && $cursor <= self::MAX_PAGES)
+            if (is_int($cursor))
             {
                 $this->cursor = cursor;
             }
