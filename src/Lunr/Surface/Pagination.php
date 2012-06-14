@@ -359,7 +359,7 @@ class Pagination
      */
     public function create_links()
     {
-        // If the total number of items is has its default value,
+        // If the total number of items has its default value,
         // then the set_total_items has not been called and the pagination cannot be built
         if($this->total == -1)
         {
