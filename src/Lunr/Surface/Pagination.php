@@ -86,6 +86,7 @@ class Pagination
         $this->range        =  2;
         $this->total        = -1;
         $this->pages_total  =  0;
+        $this->cursor       =  1;
 
         $params = $request->params;
         if (!empty($params))
@@ -98,16 +99,11 @@ class Pagination
             }
             else
             {
-                $this->cursor = 1;
                 $params[] = $cursor;
             }
         }
-        else
-        {
-            $this->cursor = 1;
-            $params_str = '';
-        }
 
+        //Construct base url
         $this->base_url = $request->base_url . '/' . $request->controller . '/' . $request->method . '/' . implode('/', $params);
 
         $this->buttons = array();
