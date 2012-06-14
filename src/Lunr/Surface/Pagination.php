@@ -99,9 +99,8 @@ class Pagination
             else
             {
                 $this->cursor = 1;
-                array_push($params, $cursor);
+                $params[] = $cursor;
             }
-            $params_str = implode('/', $params);
         }
         else
         {
@@ -109,7 +108,7 @@ class Pagination
             $params_str = '';
         }
 
-        $this->base_url = $request->base_url . '/' . $request->controller . '/' . $request->method . '/' . $params_str;
+        $this->base_url = $request->base_url . '/' . $request->controller . '/' . $request->method . '/' . implode('/', $params);
 
         $this->buttons = array();
 
