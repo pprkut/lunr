@@ -95,7 +95,7 @@ class Pagination
             //Extract the page cursor from the parameters array
             if (is_int($cursor))
             {
-                $this->cursor = cursor;
+                $this->cursor = $cursor;
             }
             else
             {
@@ -150,7 +150,7 @@ class Pagination
      */
     public function set_total_items($nritems)
     {
-        if (is_int($nritems) && $nritems > 0)
+        if (is_int($nritems) && ($nritems > 0))
         {
             $this->total = $nritems;
         }
@@ -166,7 +166,7 @@ class Pagination
      */
     public function set_base_url($url)
     {
-        if (isset($url) && is_string($url))
+        if (is_string($url))
         {
             $this->base_url = $url;
         }
@@ -182,7 +182,7 @@ class Pagination
      *
      * @return Pagination $self self reference
      */
-    public function set_button_label($key, $label='')
+    public function set_button_label($key, $label)
     {
         if (array_key_exists($key, $this->buttons))
         {
@@ -200,7 +200,7 @@ class Pagination
      */
     public function set_range($range)
     {
-        if (is_int($range) && $range > 0)
+        if (is_int($range) && ($range > 0))
         {
             $this->range = $range;
         }
@@ -216,7 +216,7 @@ class Pagination
      */
     public function set_items_per_page($per_page)
     {
-        if (is_int($per_page) && $per_page > 0)
+        if (is_int($per_page) && ($per_page > 0))
         {
             $this->per_page = $per_page;
         }
@@ -224,101 +224,45 @@ class Pagination
     }
 
     /**
-     * Creates the cursors that will link to previous pages.
+     * Creates the cursors that will link to next/previous pages.
      *
-     * Also controlling the visibility of first and previous buttons.
+     * @param Integer $amount   The amount of next pages
+     * @param Boolean $previous Whether to build the previous or next pages
      *
-     * @param Integer $amount The amount of previous pages
-     *
-     * @return mixed $html HTML string on success, FALSE on failure
+     * @return String $html Constructed HTML code or empty string
      */
-    private function build_previous($amount)
+    private function build_page_buttons($amount, $previous = TRUE)
     {
-        if ($amount > 0)
+        if ($amount <= 0)
         {
-            $html = '';
-            if (($this->cursor - $amount) > 0)
-            {
-                $start = $this->cursor - $amount;
-            }
-            else
-            {
-                $start = 1;
-            }
-
-            $end = $this->cursor - 1;
-            for($i = $start; $i <= $end; ++$i)
-            {
-                $html .= '<a class="lunr_paginator_page" href="';
-                $html .= $this->base_url . $i . '">' . $i . "</a>\n";
-            }
-
-            return $html;
+            return '';
         }
-        else
+
+        $html = '';
+
+        $start = $previous ? $this->cursor - $amount : $this->cursor + 1;
+        $end   = $previous ? $this->cursor - 1 : $this->cursor + $amount;
+
+        for ($i = $start; $i <= $end; ++$i)
         {
-            return FALSE;
+            $html .= '<a class="lunr_paginator_page" href="';
+            $html .= $this->base_url . $i . '">' . $i . "</a>\n";
         }
-    }
 
-    /**
-     * Creates the cursors that will link to next pages.
-     *
-     * Also controlling the visibility of last and next buttons
-     *
-     * @param Integer $amount The amount of next pages
-     *
-     * @return mixed $html HTML string on success, FALSE on failure
-     */
-    private function build_next($amount)
-    {
-        if ($amount > 0)
-        {
-            $html  = '';
-            $start = $this->cursor + 1;
-            $end   = $this->cursor + $amount;
-            for($i = $start; (($i <= $end) && ($i <= $this->pages_total)); ++$i)
-            {
-                $html .= '<a class="lunr_paginator_page" href="';
-                $html .= $this->base_url . $i . '">' . $i . "</a>\n";
-            }
-
-            return $html;
-        }
-        else
-        {
-            return FALSE;
-        }
+        return $html;
     }
 
     /**
      * Build a special pagination button.
      *
-     * @param String $type ENUM: previous|next|first|last
+     * @param String  $type   ENUM: previous|next|first|last
+     * @param Integer $target The page index to target
      *
      * @return mixed $return The html code if we could generate a button,
-     *                       FALSE if an invalid type was passed
+     *                       an empty string if an invalid type was passed
      */
-    private function build_button($type)
+    private function build_button($type, $target)
     {
-        switch ($type)
-        {
-            case 'previous':
-                $target = $this->cursor - 1;
-                break;
-            case 'next':
-                $target = $this->cursor + 1;
-                break;
-            case 'first':
-                $target = 1;
-                break;
-            case 'last':
-                $target = $this->pages_total;
-                break;
-            default:
-                return FALSE;
-        }
-
         if ($this->buttons[$type]['enabled'])
         {
             // these divs wrap the test (or image) for the buttons:
@@ -360,6 +304,7 @@ class Pagination
         {
             return FALSE;
         }
+
         //calculate the total number of pages
         $this->pages_total = ceil($this->total / $this->per_page);
 
@@ -369,36 +314,17 @@ class Pagination
             $this->cursor = $this->pages_total;
         }
 
-        // If range is bigger than the amount of previous pages, increase
-        // the amount of next pages shown
-        if ($this->cursor <= $this->range)
-        {
-            $nprevious = $this->cursor - 1;
-            $nnext     = $this->range + $this->range - $nprevious;
-        }
+        $nprevious = min($this->range, $this->cursor - 1);
+        $nnext     = max($this->range, $this->range + $this->range - $nprevious);
 
-        // If range is bigger than the amount of next pages, check whether
-        // the amount of previous pages was already defined and if not,
-        // increase the amount of previous pages shown
-        if ($this->cursor > $this->pages_total - $this->range)
+        if (($this->cursor + $nnext) > $this->pages_total)
         {
-            $nnext = $this->pages_total - $this->cursor;
-            if (!isset($nprevious))
-            {
-                $nprevious = $this->range + $this->range - $nnext;
-            }
-        }
-        else
-        {
-            if (!isset($nnext))
-            {
-                $nnext = $this->range;
-            }
+            $factor = ($this->cursor + $nnext) - $this->pages_total;
+            $nnext -= $factor;
 
-            if (!isset($nprevious))
-            {
-                $nprevious = $this->range;
-            }
+            $reach = $this->cursor - $nprevious - $factor;
+
+            $nprevious = ($reach > 0) ? $nprevious + $factor : $nprevious + $factor - $reach - 1;
         }
 
         if ($this->cursor == 1)
@@ -413,19 +339,19 @@ class Pagination
             $this->buttons['last']['enabled'] = FALSE;
         }
 
-        $html  = $this->build_button('first');
-        $html .= $this->build_button('previous');
+        $html  = $this->build_button('first', 1);
+        $html .= $this->build_button('previous', $this->cursor - 1);
         // paginator_numbers class div wraps the cursors shown as numbers.
         // This wrapping div allow us to show the numbers centered in screen
         $html .= "<div class='lunr_paginator_numbers'>\n";
-        $html .= $this->build_previous($nprevious);
+        $html .= $this->build_page_buttons($nprevious, TRUE);
         // using the span we set the style for the current cursor
         $html .= '<span class="lunr_paginator_page lunr_paginator_page_sel">';
         $html .= $this->cursor . "</span>\n";
-        $html .= $this->build_next($nnext);
+        $html .= $this->build_page_buttons($nnext, FALSE);
         $html .= "</div>\n"; // closes <div class='lunr_paginator_numbers'>
-        $html .= $this->build_button('next');
-        $html .= $this->build_button('last');
+        $html .= $this->build_button('next', $this->cursor + 1);
+        $html .= $this->build_button('last', $this->pages_total);
 
         return $html;
     }
