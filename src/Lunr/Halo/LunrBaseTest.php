@@ -15,6 +15,7 @@
 
 namespace Lunr\Halo;
 
+use Lunr\Core\Autoloader;
 use PHPUnit_Framework_TestCase;
 use ReflectionClass;
 
@@ -28,6 +29,12 @@ use ReflectionClass;
  */
 abstract class LunrBaseTest extends PHPUnit_Framework_TestCase
 {
+
+    /**
+     * Instance of the Autoloader class.
+     * @var Autoloader
+     */
+    private static $autoloader;
 
     /**
      * Instance of the tested class.
@@ -46,6 +53,23 @@ abstract class LunrBaseTest extends PHPUnit_Framework_TestCase
      * @var String
      */
     const FUNCTION_ID = '_lunrbackup';
+
+    /**
+     * Constructor.
+     *
+     * @param String $name     Name of the Test class
+     * @param Array  $data     Data
+     * @param String $dataName Dataname
+     */
+    public function __construct($name = NULL, array $data = array(), $dataName = '')
+    {
+        parent::__construct($name, $data, $dataName);
+
+        if (self::$autoloader === NULL)
+        {
+            self::$autoloader = new Autoloader();
+        }
+    }
 
     /**
      * Testcase Destructor.
@@ -136,6 +160,25 @@ abstract class LunrBaseTest extends PHPUnit_Framework_TestCase
     {
         runkit_function_remove($name);
         runkit_function_rename($name . self::FUNCTION_ID, $name);
+    }
+
+    /**
+     * Swap out the parent class with a mocked version.
+     *
+     * @param String $classname  Name of the class to reparent.
+     * @param String $parentname Name of the new parent class.
+     *
+     * @return void
+     */
+    protected function mock_parent_class($classname, $parentname)
+    {
+        if (class_exists($classname) === FALSE)
+        {
+            self::$autoloader->load($classname);
+        }
+
+        runkit_class_emancipate($classname);
+        runkit_class_adopt($classname, $parentname);
     }
 
     /**

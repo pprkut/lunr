@@ -37,7 +37,15 @@ abstract class MPNSTilePayloadTest extends LunrBaseTest
      */
     public function setUp()
     {
+        $parent = $this->getMockForAbstractClass('Lunr\Vortex\MPNS\MPNSPayload');
+
+        $this->mock_parent_class('Lunr\Vortex\MPNS\MPNSTilePayload', get_class($parent));
+
         $this->class = new MPNSTilePayload();
+
+        $this->class->expects($this->once())
+                    ->method('escape_string')
+                    ->will($this->returnValue('string'));
 
         $this->reflection = new ReflectionClass('Lunr\Vortex\MPNS\MPNSTilePayload');
     }
