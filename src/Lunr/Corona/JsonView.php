@@ -87,15 +87,27 @@ class JsonView extends View
         }
 
         header('Content-type: application/json');
-        http_response_code($code);
 
         if ($this->request->sapi == 'cli')
         {
-            echo json_encode($json, JSON_PRETTY_PRINT) . "\n";
+            $json = json_encode($json, JSON_PRETTY_PRINT) . "\n";
         }
         else
         {
-            echo json_encode($json);
+            $json = json_encode($json);
+        }
+
+        $etag = hash('sha256', $json);
+        header('ETag: ' . $etag);
+
+        if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && $_SERVER['HTTP_IF_NONE_MATCH'] == $etag)
+        {
+            http_response_code(HttpCode::NOT_MODIFIED);
+        }
+        else
+        {
+            http_response_code($code);
+            echo $json;
         }
     }
 
