@@ -37,15 +37,15 @@ class EmailResponse implements PushNotificationResponseInterface
     /**
      * Constructor.
      *
-     * @param Boolean         $response Response of the Mail Class.
-     * @param LoggerInterface $logger   Shared instance of a Logger.
-     * @param String          $email    The email address that the message was sent to.
+     * @param \PHPMailer\PHPMailer\PHPMailer $mail   Instance of the PHPMailer Class.
+     * @param \Psr\Log\LoggerInterface       $logger Shared instance of a Logger.
+     * @param String                         $email  The email address that the message was sent to.
      */
-    public function __construct($response, $logger, $email)
+    public function __construct($mail, $logger, $email)
     {
         $this->endpoint = $email;
 
-        if ($response === TRUE)
+        if ($mail->isError() === FALSE)
         {
             $this->status = PushNotificationStatus::SUCCESS;
         }
@@ -53,8 +53,8 @@ class EmailResponse implements PushNotificationResponseInterface
         {
             $this->status = PushNotificationStatus::ERROR;
 
-            $context = [ 'endpoint' => $email ];
-            $logger->warning('Sending email notification to {endpoint} failed.', $context);
+            $context = [ 'endpoint' => $email, 'message' => $mail->ErrorInfo ];
+            $logger->warning('Sending email notification to {endpoint} failed: {message}', $context);
         }
     }
 

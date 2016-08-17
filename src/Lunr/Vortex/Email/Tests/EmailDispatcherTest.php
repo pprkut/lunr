@@ -14,8 +14,6 @@
 namespace Lunr\Vortex\Email\Tests;
 
 use Lunr\Vortex\Email\EmailDispatcher;
-// use Lunr\Vortex\Email\EmailPriority;
-// use Lunr\Vortex\Email\EmailType;
 use Lunr\Halo\LunrBaseTest;
 use ReflectionClass;
 
@@ -28,14 +26,14 @@ use ReflectionClass;
 abstract class EmailDispatcherTest extends LunrBaseTest
 {
     /**
-     * Mock instance of the Mail class.
-     * @var Mail
+     * Mock instance of the PHPMailer class.
+     * @var \PHPMailer\PHPMailer\PHPMailer
      */
     protected $mail;
 
     /**
      * Mock instance of a Logger class.
-     * @var LoggerInterface
+     * @var \Psr\Log\LoggerInterface
      */
     protected $logger;
 
@@ -50,7 +48,7 @@ abstract class EmailDispatcherTest extends LunrBaseTest
      */
     public function setUp()
     {
-        $this->mail   = $this->getMock('Lunr\Network\Mail');
+        $this->mail   = $this->getMock('PHPMailer\PHPMailer\PHPMailer');
         $this->logger = $this->getMock('Psr\Log\LoggerInterface');
 
         $this->class = new EmailDispatcher($this->mail, $this->logger);

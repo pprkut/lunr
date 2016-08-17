@@ -14,6 +14,7 @@
 namespace Lunr\Vortex\Email;
 
 use Lunr\Vortex\PushNotificationDispatcherInterface;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 /**
  * Email Notification Dispatcher.
@@ -40,21 +41,21 @@ class EmailDispatcher implements PushNotificationDispatcherInterface
 
     /**
      * Shared instance of the Mail class.
-     * @var Mail
+     * @var \PHPMailer\PHPMailer\PHPMailer
      */
     private $mail;
 
     /**
      * Shared instance of a Logger class.
-     * @var LoggerInterface
+     * @var \Psr\Log\LoggerInterface
      */
     private $logger;
 
     /**
      * Constructor.
      *
-     * @param Mail            $mail   Shared instance of the Mail class.
-     * @param LoggerInterface $logger Shared instance of a Logger.
+     * @param \PHPMailer\PHPMailer\PHPMailer $mail   Shared instance of the PHPMailer class.
+     * @param \Psr\Log\LoggerInterface       $logger Shared instance of a Logger.
      */
     public function __construct($mail, $logger)
     {
@@ -78,23 +79,42 @@ class EmailDispatcher implements PushNotificationDispatcherInterface
     }
 
     /**
+     * Get a cloned instance of the mail transport class.
+     *
+     * @return \PHPMailer\PHPMailer\PHPMailer $mail Cloned instance of the PHPMailer class
+     */
+    private function clone_mail()
+    {
+        return clone $this->mail;
+    }
+
+    /**
      * Send the notification.
      *
      * @return EmailResponse $return Response object
      */
     public function push()
     {
-        $this->mail->set_from($this->source);
-        $this->mail->add_to($this->endpoint);
+        $mail = $this->clone_mail();
 
-        $payload_array = json_decode($this->payload, TRUE);
+        try
+        {
+            $mail->setFrom($this->source);
+            $mail->addAddress($this->endpoint);
 
-        $this->mail->set_subject($payload_array['subject']);
-        $this->mail->set_message($payload_array['body']);
+            $payload_array = json_decode($this->payload, TRUE);
 
-        $response = $this->mail->send();
+            $mail->Subject = $payload_array['subject'];
+            $mail->Body = $payload_array['body'];
 
-        $res = new EmailResponse($response, $this->logger, $this->endpoint);
+            $mail->send();
+
+            $res = new EmailResponse($mail, $this->logger, $this->endpoint);
+        }
+        catch (PHPMailerException $e)
+        {
+            $res = new EmailResponse($mail, $this->logger, $this->endpoint);
+        }
 
         $this->endpoint = '';
         $this->payload  = '';

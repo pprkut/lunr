@@ -13,6 +13,8 @@
 
 namespace Lunr\Vortex\Email\Tests;
 
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
+
 /**
  * This class contains test for the push() method of the EmailDispatcher class.
  *
@@ -32,27 +34,59 @@ class EmailDispatcherPushTest extends EmailDispatcherTest
         $this->set_reflection_property_value('source', 'sender@domain.com');
         $this->set_reflection_property_value('payload', '{"subject": "subject", "body": "body"}');
 
+        $this->mock_method([ $this->class, 'clone_mail' ], 'return $this->mail;', 'private');
+
         $this->mail->expects($this->once())
-                   ->method('set_from')
+                   ->method('setFrom')
                    ->with($this->get_reflection_property_value('source'));
 
         $this->mail->expects($this->once())
-                   ->method('add_to')
+                   ->method('addAddress')
                    ->with($this->get_reflection_property_value('endpoint'));
-
-        $this->mail->expects($this->once())
-                   ->method('set_subject')
-                   ->with('subject');
-
-        $this->mail->expects($this->once())
-                   ->method('set_message')
-                   ->with('body');
 
         $this->mail->expects($this->once())
                    ->method('send')
                    ->will($this->returnValue(TRUE));
 
         $this->assertInstanceOf('Lunr\Vortex\Email\EmailResponse', $this->class->push());
+
+        $this->assertEquals($this->mail->Subject, 'subject');
+        $this->assertEquals($this->mail->Body, 'body');
+
+        $this->unmock_method([ $this->class, 'clone_mail' ]);
+    }
+
+    /**
+     * Test that push() returns EmailResponseObject also on error.
+     *
+     * @covers Lunr\Vortex\Email\EmailDispatcher::push
+     */
+    public function testPushReturnsEmailResponseObjectOnError()
+    {
+        $this->set_reflection_property_value('endpoint', 'recipient@domain.com');
+        $this->set_reflection_property_value('source', 'sender@domain.com');
+        $this->set_reflection_property_value('payload', '{"subject": "subject", "body": "body"}');
+
+        $this->mock_method([ $this->class, 'clone_mail' ], 'return $this->mail;', 'private');
+
+        $this->mail->expects($this->once())
+                   ->method('setFrom')
+                   ->with($this->get_reflection_property_value('source'));
+
+        $this->mail->expects($this->once())
+                   ->method('addAddress')
+                   ->with($this->get_reflection_property_value('endpoint'));
+
+        $this->mail->expects($this->once())
+                   ->method('send')
+                   ->will($this->throwException(new PHPMailerException));
+
+        $this->assertInstanceOf('Lunr\Vortex\Email\EmailResponse', $this->class->push());
+
+        $this->assertEquals($this->mail->Subject, 'subject');
+        $this->assertEquals($this->mail->Body, 'body');
+
+        $this->unmock_method([ $this->class, 'clone_mail' ]);
     }
 
     /**
@@ -66,6 +100,8 @@ class EmailDispatcherPushTest extends EmailDispatcherTest
         $this->set_reflection_property_value('source', 'sender@domain.com');
         $this->set_reflection_property_value('payload', '{"subject": "subject", "body": "body"}');
 
+        $this->mock_method([ $this->class, 'clone_mail' ], 'return $this->mail;', 'private');
+
         $this->mail->expects($this->once())
                    ->method('send')
                    ->will($this->returnValue(TRUE));
@@ -74,6 +110,8 @@ class EmailDispatcherPushTest extends EmailDispatcherTest
 
         $this->assertPropertyEquals('endpoint', '');
         $this->assertPropertyEquals('payload', '');
+
+        $this->unmock_method([ $this->class, 'clone_mail' ]);
     }
 
 }
