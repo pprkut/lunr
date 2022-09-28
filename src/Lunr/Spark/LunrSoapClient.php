@@ -21,10 +21,17 @@ class LunrSoapClient extends SoapClient
 {
 
     /**
+     * Headers set for the next request.
+     * @var array
+     */
+    protected $headers;
+
+    /**
      * Constructor.
      */
     public function __construct()
     {
+        $this->headers = [];
     }
 
     /**
@@ -32,6 +39,7 @@ class LunrSoapClient extends SoapClient
      */
     public function __destruct()
     {
+        unset($this->headers);
     }
 
     /**
@@ -40,7 +48,7 @@ class LunrSoapClient extends SoapClient
      * @param string $wsdl    WSDL url
      * @param array  $options SOAP client options
      *
-     * @return LunrSoapClient $self self reference
+     * @return LunrSoapClient Self reference
      */
     public function init($wsdl, $options)
     {
@@ -65,14 +73,48 @@ class LunrSoapClient extends SoapClient
     /**
      * Set the client headers.
      *
-     * @param array|SoapHeader $headers Headers to set
+     * @param array|SoapHeader|null $headers Headers to set
      *
-     * @return LunrSoapClient $self self reference
+     * @return LunrSoapClient Self reference
      */
-    public function set_headers($headers)
+    public function set_headers($headers = NULL)
     {
-        $this->__setSoapHeaders($headers);
+        if ($this->__setSoapHeaders($headers) === TRUE)
+        {
+            if ($headers === NULL)
+            {
+                $this->headers = [];
+            }
+            elseif (!is_array($headers))
+            {
+                $this->headers = [ $headers ];
+            }
+            else
+            {
+                $this->headers = $headers;
+            }
+        }
+
         return $this;
+    }
+
+    /**
+     * Get the client headers.
+     *
+     * @return array Array of SoapHeader classes for the next request
+     */
+    public function get_headers()
+    {
+        return $this->headers;
+    }
+
+    /**
+     * Make
+     */
+    public function __soapCall($name, $args, $options = NULL, $inputHeaders = NULL, &$outputHeaders = NULL)
+    {
+        $this->headers = [];
+        return parent::__soapCall($name, $args, $options, $inputHeaders, $outputHeaders);
     }
 
 }
