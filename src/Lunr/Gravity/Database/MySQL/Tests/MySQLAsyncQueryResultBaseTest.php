@@ -143,9 +143,11 @@ class MySQLAsyncQueryResultBaseTest extends MySQLAsyncQueryResultTest
      */
     public function testFetchResultStoresResult(): void
     {
-        $result = new MockMySQLiResult($this->getMockBuilder('mysqli_result')
-                                            ->disableOriginalConstructor()
-                                            ->getMock());
+        $class = new class() { public $num_rows = 5; public function free(){} };
+
+        uopz_set_mock('MySQLi_Result', $class);
+
+        $result = new MySQLi_Result();
 
         $this->mysqli->expects($this->once())
                      ->method('reap_async_query')
@@ -159,7 +161,9 @@ class MySQLAsyncQueryResultBaseTest extends MySQLAsyncQueryResultTest
         $property = $this->result_reflection->getProperty('result');
         $property->setAccessible(TRUE);
 
-        $this->assertInstanceOf('Lunr\Gravity\Database\MySQL\Tests\MockMySQLiResult', $property->getValue($this->result));
+        $this->assertInstanceOf(get_class($class), $property->getValue($this->result));
+
+        uopz_unset_mock('MySQLi_Result');
     }
 
     /**
@@ -239,9 +243,11 @@ class MySQLAsyncQueryResultBaseTest extends MySQLAsyncQueryResultTest
      */
     public function testFetchedResultSetsSuccessTrueIfResultIsMysqliResult(): void
     {
-        $result = new MockMySQLiResult($this->getMockBuilder('mysqli_result')
-                                            ->disableOriginalConstructor()
-                                            ->getMock());
+        $class = new class() { public $num_rows = 5; public function free(){} };
+
+        uopz_set_mock('MySQLi_Result', $class);
+
+        $result = new MySQLi_Result();
 
         $this->mysqli->expects($this->once())
                      ->method('reap_async_query')
@@ -256,6 +262,8 @@ class MySQLAsyncQueryResultBaseTest extends MySQLAsyncQueryResultTest
         $property->setAccessible(TRUE);
 
         $this->assertTrue($property->getValue($this->result));
+
+        uopz_unset_mock('MySQLi_Result');
     }
 
     /**
