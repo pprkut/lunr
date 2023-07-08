@@ -18,7 +18,7 @@ class Ini
 
     /**
      * php.ini section
-     * @var String
+     * @var ?string
      */
     protected $section;
 
